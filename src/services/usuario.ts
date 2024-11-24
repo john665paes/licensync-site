@@ -1,6 +1,6 @@
-import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth"
 import { auth, db } from '@/config/firebase';
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 
 const UsuarioService = {
 
@@ -64,6 +64,22 @@ const UsuarioService = {
     },
 
     /**
+     * Retorna a lista de usuários do sistema, exceto os administradores
+     * @returns 
+     */
+
+    buscarUsuariosCliente: async (): Promise<any[]> => {
+        try {
+            const usuariosQuery = query(collection(db, 'usuarios'), where('nivel', '==', 'cliente'));
+            const snapshots = await getDocs(usuariosQuery);
+            return snapshots.docs.map(doc => doc.data());
+        } catch (erro) {
+            console.error(erro);
+            return [];
+        }
+    },
+
+    /**
      * Retorna os dados de um usuário
      * @param id 
      * @returns 
@@ -124,22 +140,73 @@ const UsuarioService = {
             });
     },
 
+
+
     /**
      * Excluir um usuario
      * @param usuario 
      * @returns 
      */
-    excluir: async (usuario: any): Promise<{ sucesso: boolean }> => {
-        return deleteDoc(doc(db, 'usuarios', usuario.uid))
-            .then(retorno => {
-                return { sucesso: true }
-            })
-            .catch(erro => {
-                return { sucesso: false }
-            })
-    }
+    excluirUsuario: async (uid: string): Promise<{ sucesso: boolean }> => {
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
 
+            // Verificar se o usuário atual é o mesmo a ser deletado
+            if (user && user.uid === uid) {
+                // Deletar do Firestore
+                await deleteDoc(doc(db, 'usuarios', uid));
 
+                // Deletar da Autenticação
+                await deleteUser(user);
+
+                console.log(`Usuário ${uid} deletado com sucesso.`);
+                return { sucesso: true };
+            } else {
+                console.error('O usuário atual não corresponde ao UID fornecido.');
+                return { sucesso: false };
+            }
+        } catch (erro) {
+            console.error("Erro ao excluir usuário:", erro);
+            return { sucesso: false };
+        }
+    },
+    /**
+     * Edita um usuário
+     * @param usuario 
+     * @returns 
+     */
+    atualizarCliente: async (usuario: any): Promise<{ sucesso: boolean }> => {
+        try {
+            // Valida se o UID está presente
+            if (!usuario.uid) {
+                throw new Error('ID do usuário (uid) não fornecido.');
+            }
+    
+            // Remove campos sensíveis antes de salvar
+            delete usuario.senha;
+    
+            // Referência ao documento do Firestore
+            const usuarioDOC = doc(db, 'usuarios', usuario.uid);
+    
+            // Atualiza ou mescla os dados do usuário
+            await setDoc(
+                usuarioDOC,
+                {
+                    ...usuario,
+                    nivel: usuario.nivel || 'cliente', // Adiciona o nível se não existir
+                },
+                { merge: true } // Mescla com os dados existentes
+            );
+    
+            return { sucesso: true };
+        } catch (erro) {
+            console.error('Erro ao atualizar o usuário:', erro);
+            return { sucesso: false };
+        }
+    },
+    
+    
 }
 
 

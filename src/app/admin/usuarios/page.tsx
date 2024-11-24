@@ -9,8 +9,9 @@ export default function UsuariosPage() {
   const usuariosSrv = useUsuarioService();
   const [usuarios, setUsuarios] = React.useState<any[]>([]);
   // ===========================================================
-  const buscarUsuarios = async () => {
-    setUsuarios(await usuariosSrv.buscarUsuarios())
+  const buscarUsuariosCliente = async () => {
+
+    setUsuarios(await usuariosSrv.buscarUsuariosCliente())
   }
   // ----------
   const handleResetarSenha = async (usuario: any) => {
@@ -23,9 +24,9 @@ export default function UsuariosPage() {
   // ----------
   const handleDeletarConta = async (usuario: any) => {
     if (confirm(`Deseja realmente excluir a conta de ${usuario.nome}(${usuario.email})?`)) {
-      const retorno = await usuariosSrv.excluir(usuario);
+      const retorno = await usuariosSrv.excluirUsuario(usuario);
       if (retorno.sucesso) {
-        setUsuarios(await usuariosSrv.buscarUsuarios())
+        setUsuarios(await usuariosSrv.buscarUsuariosCliente())
         alert('Conta deletada');
       } else
         alert('Conta não encontrada');
@@ -33,7 +34,7 @@ export default function UsuariosPage() {
   }
   // ----------
   React.useEffect(() => {
-    buscarUsuarios();
+    buscarUsuariosCliente();
   }, []);
   // ===========================================================
   return (
@@ -44,7 +45,7 @@ export default function UsuariosPage() {
       </AdminHeader>
 
       <div className="card-header pb-0">
-        <h6>Usuários</h6>
+        <h6>Clientes</h6>
       </div>
       <div className="card-body px-0 pt-0 pb-2">
         <div className="table-responsive p-0">
@@ -69,9 +70,6 @@ export default function UsuariosPage() {
                   <td className="align-middle">
                     <p className="text-secondary font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleResetarSenha(usuario)} data-toggle="tooltip" data-original-title="Edit user">
                       Resetar senha
-                    </p>
-                    <p className="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Nível">
-                      {usuario.nivel}
                     </p>
                     <p className="text-danger font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleDeletarConta(usuario)} data-toggle="tooltip" data-original-title="Edit user">
                       Excluir conta
