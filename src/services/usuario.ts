@@ -12,33 +12,33 @@ const UsuarioService = {
      */
     logar: async (email: string, senha: string): Promise<{ usuario?: any; sucesso: boolean }> => {
         try {
-          const retorno = await signInWithEmailAndPassword(auth, email, senha);
-          console.log("Usuário autenticado:", retorno.user.uid);
-          const consulta = query(collection(db, 'usuarios'), where('id', '==', retorno.user.uid), where('nivel', '==', 'admin'));
-          const dados = await getDocs(consulta);
-          console.log(dados.size)
-          if (dados.size > 0) {
-            return { sucesso: true, usuario: retorno.user };
-          }
-      
-          console.warn("Usuário autenticado, mas não encontrado no Firestore");
-          return { sucesso: false }; // Usuário autenticado, mas não registrado no Firestore
+            const retorno = await signInWithEmailAndPassword(auth, email, senha);
+            console.log("Usuário autenticado:", retorno.user.uid);
+            const consulta = query(collection(db, 'usuarios'), where('id', '==', retorno.user.uid), where('nivel', '==', 'admin'));
+            const dados = await getDocs(consulta);
+            console.log(dados.size)
+            if (dados.size > 0) {
+                return { sucesso: true, usuario: retorno.user };
+            }
+
+            console.warn("Usuário autenticado, mas não encontrado no Firestore");
+            return { sucesso: false }; // Usuário autenticado, mas não registrado no Firestore
         } catch (erro: any) {
-          console.error("Erro durante o login:", erro.code, erro.message);
-          return { sucesso: false };
+            console.error("Erro durante o login:", erro.code, erro.message);
+            return { sucesso: false };
         }
-      },
-      
+    },
+
 
     /**
      * Função para recuperar senha
      * @param email 
      * @returns sucesso status booleano caso tenha conseguido solicitar nova senha
      */
-    recuperarSenha: async (email: string): Promise<{sucesso: boolean}> => {
+    recuperarSenha: async (email: string): Promise<{ sucesso: boolean }> => {
         return sendPasswordResetEmail(auth, email)
-            .then((retorno) => { return { sucesso: true }})
-            .catch(erro => { return { sucesso: false }});
+            .then((retorno) => { return { sucesso: true } })
+            .catch(erro => { return { sucesso: false } });
     },
 
     /**
@@ -62,9 +62,9 @@ const UsuarioService = {
      * @param id 
      * @returns 
      */
-    buscar: async (id: string): Promise<any>  => {
+    buscar: async (id: string): Promise<any> => {
         return getDoc(doc(db, 'usuarios', id))
-            .then(retorno => { 
+            .then(retorno => {
                 return (retorno.exists() ? retorno.data() : null)
             })
             .catch(erro => null)
@@ -75,26 +75,55 @@ const UsuarioService = {
      * @param usuario 
      * @returns 
      */
-    cadastrar: async (usuario:any): Promise<{sucesso: boolean}> => {
-        return createUserWithEmailAndPassword(auth, usuario.email, usuario.senha)
+    cadastrarCliente: async (usuario: any): Promise<{ sucesso: boolean }> => {
+        return createUserWithEmailAndPassword(auth, usuario.email, usuario.cnpj)
             .then(async retorno => {
                 usuario.uid = retorno.user.uid;
                 delete usuario.senha;
 
-                const usuarioDOC = doc(db, 'usuarios', usuario.uid)
+                // Adicionando o nível antes de salvar
+                const usuarioDOC = doc(db, 'usuarios', usuario.uid);
+                await setDoc(usuarioDOC, {
+                    ...usuario,
+                    nivel: 'cliente', // Adicionando explicitamente o nível
+                });
 
-                await setDoc(usuarioDOC, usuario);
                 return { sucesso: true };
             })
-            .catch(erro => { return { sucesso: false} });
+            .catch(erro => {
+                console.error(erro);
+                return { sucesso: false };
+            });
     },
+
+
+    cadastrarAdm: async (usuario: any): Promise<{ sucesso: boolean }> => {
+        return createUserWithEmailAndPassword(auth, usuario.email, usuario.senha)
+            .then(async retorno => {
+                usuario.uid = retorno.user.uid;
+                delete usuario.senha;
     
+                // Adicionando o nível 'admin' antes de salvar
+                const usuarioDOC = doc(db, 'usuarios', usuario.uid);
+                await setDoc(usuarioDOC, {
+                    ...usuario,
+                    nivel: 'admin', // Definindo o nível como 'admin'
+                });
+    
+                return { sucesso: true };
+            })
+            .catch(erro => {
+                console.error(erro);
+                return { sucesso: false };
+            });
+    },
+
     /**
      * Excluir um usuario
      * @param usuario 
      * @returns 
      */
-    excluir: async (usuario:any): Promise<{sucesso: boolean}> => {
+    excluir: async (usuario: any): Promise<{ sucesso: boolean }> => {
         return deleteDoc(doc(db, 'usuarios', usuario.uid))
             .then(retorno => {
                 return { sucesso: true }

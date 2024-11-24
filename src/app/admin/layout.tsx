@@ -30,7 +30,7 @@ export default function AdminLayout({children}: any) {
                     <div className="sidenav-header">
                         <i className="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
                         <p className="navbar-brand m-0">
-                            <span className="ms-1 font-weight-bold">ADMIN TEMPLATE</span>
+                            <span className="ms-1 font-weight-bold">Licensync Admin</span>
                         </p>
                     </div>
                     <hr className="horizontal dark mt-0" />
@@ -50,7 +50,7 @@ export default function AdminLayout({children}: any) {
                             <li className="nav-item">
                                 <Link className={'nav-link ' + (url.endsWith('usuarios') ? 'active': '')} href="/admin/usuarios">
                                     <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i className="ni ni-bullet-list-67 text-warning text-sm opacity-10"></i>
+                                    <i className="ni ni-single-02 text-warning text-sm opacity-10"></i>
                                     </div>
                                     <span className="nav-link-text ms-1">Usuarios</span>
                                 </Link>
@@ -101,7 +101,7 @@ export default function AdminLayout({children}: any) {
                             <div className="row align-items-center justify-content-lg-between">
                                 <div className="col-lg-6 mb-lg-0 mb-4">
                                     <p className="copyright text-center text-white text-sm text-lg-start">
-                                        Template Argon adaptado por CWG
+                                        Template CWG adaptado com Jonh
                                     </p>
                                 </div>
                             </div>

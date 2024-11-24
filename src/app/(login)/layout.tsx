@@ -6,7 +6,7 @@ export default function LoginLayout({children}: any) {
               {/* <!-- Navbar --> */}
               <nav className="navbar navbar-expand-lg blur border-radius-lg top-0 z-index-3 shadow position-absolute mt-4 py-2 start-0 end-0 mx-4">
                 <div className="container-fluid" style={{flex: 1, justifyContent: 'center'}}>
-                    <p style={{fontWeight: 'bold', marginTop: 10}}>Template ADMIN</p>
+                    <p style={{fontWeight: 'bold', marginTop: 10}}>Licensync</p>
                 </div>
               </nav>
               {/* <!-- End Navbar --> */}

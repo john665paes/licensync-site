@@ -39,7 +39,8 @@ export default function UsuariosPage() {
   return (
     <main>
       <AdminHeader titulo='Lista de Usuários'>
-        <Link className='btn btn-primary' href="/admin/usuarios/editar">Novo usuário</Link>
+        <Link className='btn btn-primary' href="/admin/usuarios/editarAdm">Novo usuário administrador</Link>&nbsp;
+        <Link className='btn btn-primary' href="/admin/usuarios/editarCliente">Novo usuário cliente</Link>
       </AdminHeader>
 
       <div className="card-header pb-0">
@@ -68,6 +69,9 @@ export default function UsuariosPage() {
                   <td className="align-middle">
                     <p className="text-secondary font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleResetarSenha(usuario)} data-toggle="tooltip" data-original-title="Edit user">
                       Resetar senha
+                    </p>
+                    <p className="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Nível">
+                      {usuario.nivel}
                     </p>
                     <p className="text-danger font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleDeletarConta(usuario)} data-toggle="tooltip" data-original-title="Edit user">
                       Excluir conta
