@@ -19,7 +19,7 @@ export default function AdminLayout({children}: any) {
         if (carregado && !usuario) 
             router.replace('/')
         
-    }, [carregado])
+    }, [carregado, usuario, router])
     // ===============================================================
     return (
         <>

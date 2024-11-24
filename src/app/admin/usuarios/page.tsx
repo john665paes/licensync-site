@@ -9,10 +9,9 @@ export default function UsuariosPage() {
   const usuariosSrv = useUsuarioService();
   const [usuarios, setUsuarios] = React.useState<any[]>([]);
   // ===========================================================
-  const buscarUsuariosCliente = async () => {
-
-    setUsuarios(await usuariosSrv.buscarUsuariosCliente())
-  }
+  const buscarUsuariosCliente = React.useCallback(async () => {
+    setUsuarios(await usuariosSrv.buscarUsuariosCliente());
+  }, [usuariosSrv]);
   // ----------
   const handleResetarSenha = async (usuario: any) => {
     const retorno = await usuariosSrv.recuperarSenha(usuario.email);
@@ -34,8 +33,12 @@ export default function UsuariosPage() {
   }
   // ----------
   React.useEffect(() => {
-    buscarUsuariosCliente();
-  }, []);
+    const fetchUsuarios = async () => {
+      setUsuarios(await usuariosSrv.buscarUsuariosCliente());
+    };
+
+    fetchUsuarios();
+  }, [usuariosSrv]);
   // ===========================================================
   return (
     <main>

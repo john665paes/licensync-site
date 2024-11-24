@@ -9,15 +9,15 @@ export default function FormulariosPage() {
   const [usuarios, setUsuarios] = React.useState<any[]>([]);
 
   // ===========================================================
-  const buscarUsuarios = async () => {
+  const buscarUsuarios = React.useCallback(async () => {
     const resultado = await usuariosSrv.buscarUsuariosCliente();
     console.log("Usuários carregados:", resultado); // Verificar conteúdo
     setUsuarios(resultado || []); // Garantir que é um array
-  };
+  }, [usuariosSrv]);
 
   React.useEffect(() => {
     buscarUsuarios();
-  }, []);
+  }, [buscarUsuarios]);
   // ===========================================================
   return (
     <main>

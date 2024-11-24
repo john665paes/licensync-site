@@ -26,7 +26,7 @@ export default function UsuarioEditarPage({ params }: any) {
     };
 
     buscarUsuario();
-}, [params]);
+}, [params, usuariosSrv]);
 
 
 const handleSalvar = async (dados: any) => {
