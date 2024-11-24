@@ -12,23 +12,29 @@ const UsuarioService = {
      */
     logar: async (email: string, senha: string): Promise<{ usuario?: any; sucesso: boolean }> => {
         try {
+            // Tenta fazer o login do usuário com email e senha
             const retorno = await signInWithEmailAndPassword(auth, email, senha);
             console.log("Usuário autenticado:", retorno.user.uid);
-            const consulta = query(collection(db, 'usuarios'), where('id', '==', retorno.user.uid), where('nivel', '==', 'admin'));
+
+            // Consulta no Firestore, verificando o 'uid' do usuário e o nível de 'admin'
+            const consulta = query(collection(db, 'usuarios'),
+                where('uid', '==', retorno.user.uid),   // Verifique se o campo no Firestore é 'uid' ou outro
+                where('nivel', '==', 'admin'));
+
             const dados = await getDocs(consulta);
-            console.log(dados.size)
+            console.log("Usuários encontrados:", dados.size);
+
             if (dados.size > 0) {
                 return { sucesso: true, usuario: retorno.user };
             }
 
-            console.warn("Usuário autenticado, mas não encontrado no Firestore");
-            return { sucesso: false }; // Usuário autenticado, mas não registrado no Firestore
+            console.warn("Usuário autenticado, mas não encontrado no Firestore com nível 'admin'.");
+            return { sucesso: false }; // Usuário autenticado, mas não encontrado no Firestore com nível 'admin'
         } catch (erro: any) {
             console.error("Erro durante o login:", erro.code, erro.message);
             return { sucesso: false };
         }
     },
-
 
     /**
      * Função para recuperar senha
@@ -102,14 +108,14 @@ const UsuarioService = {
             .then(async retorno => {
                 usuario.uid = retorno.user.uid;
                 delete usuario.senha;
-    
+
                 // Adicionando o nível 'admin' antes de salvar
                 const usuarioDOC = doc(db, 'usuarios', usuario.uid);
                 await setDoc(usuarioDOC, {
                     ...usuario,
                     nivel: 'admin', // Definindo o nível como 'admin'
                 });
-    
+
                 return { sucesso: true };
             })
             .catch(erro => {
