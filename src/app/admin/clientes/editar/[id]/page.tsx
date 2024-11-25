@@ -9,44 +9,53 @@ export default function UsuarioEditarPage({ params }: any) {
   const [usuario, setUsuario] = useState<any>(null);
   const [mensagem, setMensagem] = useState<null | boolean>(null);
   const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState<File | null>(null); // Estado para gerenciar o arquivo da licença
 
   useEffect(() => {
     const buscarUsuario = async () => {
-        try {
-            const resolvedParams = await params; // Resolve os parâmetros
-            const userId = resolvedParams.id;
-            const usuarioCarregado = await usuariosSrv.buscar(userId); // Busca o usuário no serviço
-            setUsuario({ ...usuarioCarregado, uid: userId });
-            setLoading(false); // Finaliza o carregamento
-        } catch (error) {
-            console.error('Erro ao buscar usuário:', error);
-            setMensagem(false); // Mostra mensagem de erro, se necessário
-            setLoading(false); // Finaliza o carregamento mesmo em caso de erro
-        }
+      try {
+        const resolvedParams = await params; // Resolve os parâmetros
+        const userId = resolvedParams.id;
+        const usuarioCarregado = await usuariosSrv.buscar(userId); // Busca o usuário no serviço
+        setUsuario({ ...usuarioCarregado, uid: userId });
+        setLoading(false); // Finaliza o carregamento
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+        setMensagem(false); // Mostra mensagem de erro, se necessário
+        setLoading(false); // Finaliza o carregamento mesmo em caso de erro
+      }
     };
 
     buscarUsuario();
-}, [params, usuariosSrv]);
+  }, [params, usuariosSrv]);
 
+  const handleSalvar = async (dados: any) => {
+    setMensagem(null); // Reseta a mensagem de status
 
-const handleSalvar = async (dados: any) => {
-  setMensagem(null); // Reseta a mensagem de status
-
-  try {
-      // Chama o serviço e trata o retorno
+    try {
+      // Atualiza o usuário
       const retorno = await usuariosSrv.atualizarCliente(dados);
 
-      if (!retorno.sucesso) {
-          setMensagem(false); // Define mensagem de erro
-      } else {
-          setMensagem(true); // Define mensagem de sucesso
+      // Se a atualização foi bem-sucedida e há um arquivo, tenta fazer o upload da licença
+      if (retorno.sucesso && file) {
+        await inserirLicencaService(dados.uid, file); // Supondo que o método de inserção da licença seja esse
+        setMensagem(true); // Mensagem de sucesso após o upload
+        setFile(null); // Limpa o arquivo após o upload
+      } else if (!retorno.sucesso) {
+        setMensagem(false); // Caso a atualização falhe
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Erro ao salvar os dados:', error);
       setMensagem(false); // Define mensagem de erro em caso de exceção
-  }
-};
+    }
+  };
 
+  // Função para lidar com a seleção do arquivo de licença
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setFile(event.target.files[0]);  // Armazena o arquivo selecionado
+    }
+  };
 
   return (
     <main>
@@ -179,6 +188,18 @@ const handleSalvar = async (dados: any) => {
                       </div>
                     </div>
 
+                    {/* Botão Adicionar Licença */}
+                    <div className="col-md-6">
+                      <div className="form-group text-center">
+                        <input 
+                          type="file" 
+                          accept=".pdf" 
+                          onChange={handleFileChange} // Chama a função de seleção de arquivo
+                          className="form-control" 
+                        />
+                      </div>
+                    </div>
+
                     {/* Botão Salvar */}
                     <div className="col-md-12">
                       <div className="form-group">
@@ -197,3 +218,7 @@ const handleSalvar = async (dados: any) => {
     </main>
   );
 }
+function inserirLicencaService(uid: any, file: File) {
+  throw new Error('Function not implemented.');
+}
+

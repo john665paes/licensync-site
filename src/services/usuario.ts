@@ -1,6 +1,7 @@
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth"
-import { auth, db } from '@/config/firebase';
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { auth, db, storage } from '@/config/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 
 const UsuarioService = {
 
@@ -182,13 +183,13 @@ const UsuarioService = {
             if (!usuario.uid) {
                 throw new Error('ID do usuário (uid) não fornecido.');
             }
-    
+
             // Remove campos sensíveis antes de salvar
             delete usuario.senha;
-    
+
             // Referência ao documento do Firestore
             const usuarioDOC = doc(db, 'usuarios', usuario.uid);
-    
+
             // Atualiza ou mescla os dados do usuário
             await setDoc(
                 usuarioDOC,
@@ -198,15 +199,71 @@ const UsuarioService = {
                 },
                 { merge: true } // Mescla com os dados existentes
             );
-    
+
             return { sucesso: true };
         } catch (erro) {
             console.error('Erro ao atualizar o usuário:', erro);
             return { sucesso: false };
         }
     },
-    
-    
+    AdicionarCondicionante: async (usuario: any): Promise<{ sucesso: boolean }> => {
+        try {
+            // Valida se o UID está presente
+            if (!usuario.uid) {
+                throw new Error('ID do usuário (uid) não fornecido.');
+            }
+
+            // Referência ao documento do Firestore
+            const usuarioDOC = doc(db, 'usuarios', usuario.uid, 'Condicionantes');
+
+            // Atualiza ou mescla os dados do usuário
+            await setDoc(
+                usuarioDOC,
+                {
+                    ...usuario,
+                },
+                { merge: true } // Mescla com os dados existentes
+            );
+
+            return { sucesso: true };
+        } catch (erro) {
+            console.error('Erro ao atualizar o usuário:', erro);
+            return { sucesso: false };
+        }
+    },
+
+    inserirLicencaService: async (id: string) => {
+        try {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.pdf';
+
+            fileInput.click();
+
+            fileInput.onchange = async () => {
+                const file = fileInput.files ? fileInput.files[0] : null;
+
+                if (file && id) {
+                    const fileName = file.name || 'licenca.pdf';
+                    const refLicenca = ref(storage, `arquivos/${id}/${fileName}`);
+
+                    const blobStream = await file.arrayBuffer().then((r) => new Blob([r]));
+                    await uploadBytes(refLicenca, blobStream);
+
+                    const url = await getDownloadURL(refLicenca);
+                    await updateDoc(doc(db, 'usuarios', id), { licenca: url });
+
+                    return url;
+                } else {
+                    console.log('Nenhum arquivo selecionado ou ID do usuário não encontrado.');
+                    return null;
+                }
+            };
+        } catch (error) {
+            console.error('Erro durante o processo de upload da licença:', error);
+            throw new Error('Erro ao fazer upload da licença.');
+        }
+    }
 }
 
 

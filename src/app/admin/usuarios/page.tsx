@@ -65,7 +65,7 @@ export default function UsuariosPage() {
                   <td>
                     <div className="d-flex px-2 py-1">
                       <div className="d-flex flex-column justify-content-center">
-                        <h6 className="mb-0 text-sm">{usuario.nome}</h6>
+                        <h6 className="mb-0 text-sm">{usuario.empresa}</h6>
                         <p className="text-xs text-secondary mb-0">{usuario.email}</p>
                       </div>
                     </div>

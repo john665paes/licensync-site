@@ -11,7 +11,7 @@ export default function FormulariosPage() {
   // ===========================================================
   const buscarUsuarios = React.useCallback(async () => {
     const resultado = await usuariosSrv.buscarUsuariosCliente();
-    console.log("Usuários carregados:", resultado); // Verificar conteúdo
+    console.log('Usuários carregados:', resultado); // Verificar conteúdo
     setUsuarios(resultado || []); // Garantir que é um array
   }, [usuariosSrv]);
 
@@ -19,9 +19,10 @@ export default function FormulariosPage() {
     buscarUsuarios();
   }, [buscarUsuarios]);
   // ===========================================================
+
   return (
     <main>
-      <AdminHeader titulo="Editar" />
+      <AdminHeader titulo="Clientes" />
 
       <div className="card-header pb-0">
         <h6>Clientes</h6>
@@ -32,9 +33,12 @@ export default function FormulariosPage() {
             <thead>
               <tr>
                 <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                  Lista
+                  Empresa
                 </th>
-                <th className="text-secondary opacity-7"></th>
+                <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                  E-mail
+                </th>
+                <th className="text-secondary opacity-7">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -43,20 +47,36 @@ export default function FormulariosPage() {
                   <td>
                     <div className="d-flex px-2 py-1">
                       <div className="d-flex flex-column justify-content-center">
-                        <h6 className="mb-0 text-sm">{usuario.empresa || ''}</h6>
-                        <p className="text-xs text-secondary mb-0">Email: {usuario.email || ''}</p>
+                        <h6 className="mb-0 text-sm">{usuario.empresa || 'Sem empresa'}</h6>
+                        <p className="text-xs text-secondary mb-0">{usuario.email || 'Sem e-mail'}</p>
                       </div>
                     </div>
                   </td>
+                  <td>
+                    <p className="text-xs text-secondary mb-0">{usuario.email || 'Sem e-mail'}</p>
+                  </td>
                   <td className="align-middle">
-                    <Link
-                      href={`/admin/clientes/editar/${usuario.id}`}
-                      className="text-secondary font-weight-bold text-xs"
-                      data-toggle="tooltip"
-                      data-original-title="Edit user"
-                    >
-                      Editar
-                    </Link>
+                    <div className="d-flex justify-content-start">
+                      {/* Link de Editar */}
+                      <Link
+                        href={`/admin/clientes/editar/${usuario.id}`}
+                        className="btn btn-sm btn-outline-primary me-3"
+                        data-toggle="tooltip"
+                        data-original-title="Editar usuário"
+                      >
+                        <i className="fas fa-pencil-alt me-2"></i> Editar
+                      </Link>
+
+                      {/* Botão de Adicionar Condicionante */}
+                      <Link
+                        href={`/admin/clientes/addCondicionante/${usuario.id}`}
+                        className="btn btn-sm btn-outline-primary me-3"
+                        data-toggle="tooltip"
+                        data-original-title="Adicionar Condicionante"
+                      >
+                        <i className="fas fa-pencil-alt me-2"></i> Adicionar Condicionante
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
