@@ -4,35 +4,55 @@ import { AdminHeader } from '../../../components';
 import { useUsuarioService } from '../../../../../services/usuario';
 import { Field, Form, Formik } from 'formik';
 
-export default function UsuarioEditarPage({ params }: { params: { id: string } }) {
+export default function UsuarioEditarPage({ params }: { params: Promise<{ id: string }> }) {
   const usuariosSrv = useUsuarioService();
+  const [usuario, setUsuario] = useState<any>(null);
   const [mensagem, setMensagem] = useState<null | string>(null); // Mensagem de sucesso ou erro
-  const [loading, setLoading] = useState(false); // Remover a dependência do carregamento do usuário
+  const [loading, setLoading] = useState(true); // Estado de carregamento
 
   useEffect(() => {
-    setLoading(false); // Não precisamos mais carregar dados, então setamos o loading como false diretamente
-  }, [params]);
+    const buscarUsuario = async () => {
+      try {
+        const resolvedParams = await params; // Resolve o Promise
+        const userId = resolvedParams.id; // Acesse o ID do resolvedParams
+        if (!userId) {
+          console.error('ID não encontrado');
+          setMensagem('Erro: ID não encontrado');
+          setLoading(false);
+          return;
+        }
+
+        // Buscar usuário usando o ID
+        const usuarioCarregado = await usuariosSrv.buscar(userId); // Busca o usuário no serviço
+        setUsuario({ ...usuarioCarregado, uid: userId });
+        setLoading(false); // Finaliza o carregamento
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+        setMensagem('Erro ao buscar os dados do usuário');
+        setLoading(false); // Finaliza o carregamento mesmo em caso de erro
+      }
+    };
+
+    buscarUsuario();
+  }, [params, usuariosSrv]);
 
   const handleSalvar = async (dados: any) => {
-    setMensagem(null); // Reseta a mensagem de status
+    console.log('dados no handleSalvar:', dados); // Adicione um log para depurar
 
     try {
-      if (!params?.id) throw new Error('ID do usuário não encontrado.');
-      const retorno = await usuariosSrv.AdicionarCondicionante({
-        id: params.id,
-        ...dados,
-      });
+        // Atualiza os dados do usuário
+        const retorno = await usuariosSrv.AdicionarCondicionante(dados);
 
-      if (!retorno.sucesso) {
-        setMensagem('Não foi possível salvar o condicionante.'); // Mensagem de erro
-      } else {
-        setMensagem('Condicionante salvo com sucesso!'); // Mensagem de sucesso
-      }
-    } catch (error: any) {
-      console.error('Erro ao salvar os dados:', error);
-      setMensagem(error.message || 'Erro ao salvar os dados.');
+        if (retorno.sucesso) {
+            setMensagem('Condicionante adicionado com sucesso!');
+        } else {
+            setMensagem('Erro ao adicionar condicionante.');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar os dados:', error);
+        setMensagem('Erro ao salvar os dados');
     }
-  };
+};
 
   return (
     <main>
@@ -42,9 +62,7 @@ export default function UsuarioEditarPage({ params }: { params: { id: string } }
       {/* Mensagens de Sucesso ou Erro */}
       {mensagem && (
         <p
-          className={`alert ${
-            mensagem.includes('sucesso') ? 'alert-success' : 'alert-danger'
-          }`}
+          className={`alert ${mensagem.includes('sucesso') ? 'alert-success' : 'alert-danger'}`}
         >
           {mensagem}
         </p>
@@ -53,61 +71,61 @@ export default function UsuarioEditarPage({ params }: { params: { id: string } }
       {loading ? (
         <p>Carregando...</p>
       ) : (
-        <Formik
-          initialValues={{
-            conteudo: '', // Deixe os campos vazios, sem dados do banco
-            data: '', // Deixe o campo de data vazio
-          }}
-          onSubmit={handleSalvar}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <div className="card-body">
-                <div className="row">
-                  {/* Campo Textarea */}
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <label className="form-control-label">Conteúdo</label>
-                      <Field
-                        as="textarea"
-                        className="form-control"
-                        name="conteudo"
-                        placeholder="Digite o conteúdo aqui..."
-                        required
-                      />
+        usuario && (
+          <Formik
+            initialValues={{
+              uid: usuario.uid,
+              condicionante: '', // Deixe os campos vazios, sem dados do banco
+              data: '', // Deixe o campo de data vazio
+            }}
+            onSubmit={handleSalvar} // Chama a função handleSalvar com os dados do formulário
+          >
+            {({ isSubmitting }) => (
+              <Form>
+                <div className="card-body">
+                  <div className="columns">
+                    {/* Campo Textarea para Condicionante */}
+                    <div className="col-md-12">
+                      <div className="form-group">
+                        <label className="form-control-label">Condicionante:</label>
+                        <Field
+                          as="textarea" // Usando "textarea" para o campo condicionante
+                          className="form-control"
+                          name="condicionante"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Campo de Seleção de Data */}
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <label className="form-control-label">Data</label>
-                      <Field
-                        className="form-control"
-                        type="date"
-                        name="data"
-                        required
-                      />
+                    {/* Campo de Seleção de Data */}
+                    <div className="col-md-5">
+                      <div className="form-group">
+                        <label className="form-control-label">Data Vencimento:</label>
+                        <Field
+                          className="form-control"
+                          type="date" // Usando o tipo "date" para o campo de data
+                          name="data"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Botão Salvar */}
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <button
-                        className="btn btn-primary w-100"
-                        type="submit"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? 'Enviando...' : 'Salvar'}
-                      </button>
+                    {/* Botão Salvar */}
+                    <div className="col-md-12">
+                      <div className="form-group">
+                        <button
+                          className="btn btn-primary w-100"
+                          type="submit"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Enviando...' : 'Salvar'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Form>
-          )}
-        </Formik>
+              </Form>
+            )}
+          </Formik>
+        )
       )}
     </main>
   );

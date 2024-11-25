@@ -42,7 +42,7 @@ export default function UsuarioEditarPage({ params }: any) {
         // Se houver um arquivo de licença, realiza o upload e chama o serviço editarLicenca
         if (file && typeof file !== 'string') {
           try {
-            const filePath = `licencas/${dados.uid}/${file.name}`;
+            const filePath = `arquivos/${dados.uid}/${file.name}`;
             const storageRef = ref(storage, filePath);
 
             // Realiza o upload do arquivo
@@ -50,7 +50,7 @@ export default function UsuarioEditarPage({ params }: any) {
               // Obtém a URL da licença
               const licencaUrl = await getDownloadURL(snapshot.ref);
 
-              // Adiciona a URL da licença no objeto `dados`
+              // Adiciona a URL da licença no objeto dados
               dados.licenca = licencaUrl;
 
               // Chama o serviço para salvar a URL da licença no banco
@@ -105,20 +105,19 @@ export default function UsuarioEditarPage({ params }: any) {
           <Formik
             initialValues={{
               uid: usuario.uid || '', // Inclui o uid como parte dos valores iniciais
-              nome: usuario.nome || '',
-              email: usuario.email || '',
-              senha: usuario.senha || '',
               empresa: usuario.empresa || '',
               cnpj: usuario.cnpj || '',
+              email: usuario.email || '',
               telefone1: usuario.telefone1 || '',
               telefone2: usuario.telefone2 || '',
-              cep: usuario.cep || '',
               endereco: usuario.endereco || '',
+              cidade: usuario.cidade || '',
+              cep: usuario.cep || '',
               numero: usuario.numero || '',
               complemento: usuario.complemento || '',
-              cidade: usuario.cidade || '',
               bairro: usuario.bairro || '',
               uf: usuario.uf || '',
+              licenca: usuario.licenca || '',
             }}
             enableReinitialize
             onSubmit={handleSalvar} // Chama a função handleSalvar com os dados do formulário
@@ -127,7 +126,7 @@ export default function UsuarioEditarPage({ params }: any) {
               <Form>
                 <div className="card-body">
                   <div className="row">
-                    {/* Formulário de entrada */}
+
                     <div className="col-md-4">
                       <div className="form-group">
                         <label className="form-control-label">Empresa</label>
@@ -149,25 +148,16 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* Outras entradas */}
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <div className="form-group">
                         <label className="form-control-label">Telefone 1</label>
                         <Field className="form-control" type="text" name="telefone1" />
                       </div>
                     </div>
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <div className="form-group">
                         <label className="form-control-label">Telefone 2</label>
                         <Field className="form-control" type="text" name="telefone2" />
-                      </div>
-                    </div>
-
-                    {/* Cidade e Endereço */}
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-control-label">Cidade</label>
-                        <Field className="form-control" type="text" name="cidade" />
                       </div>
                     </div>
 
@@ -178,15 +168,76 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* Arquivo de licença */}
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-control-label">Cidade</label>
+                        <Field className="form-control" type="text" name="cidade" />
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-control-label">CEP</label>
+                        <Field className="form-control" type="text" name="cep" />
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-control-label">Número</label>
+                        <Field className="form-control" type="text" name="numero" />
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-control-label">Complemento</label>
+                        <Field className="form-control" type="text" name="complemento" />
+                      </div>
+                    </div>
+
                     <div className="col-md-6">
-                      <div className="form-group text-center">
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={handleFileChange}
-                          className="form-control"
-                        />
+                      <div className="form-group">
+                        <label className="form-control-label">Complemento</label>
+                        <Field className="form-control" type="text" name="bairro" />
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-control-label">Complemento</label>
+                        <Field className="form-control" type="text" name="uf" />
+                      </div>
+                    </div>
+
+                    {/* Campo para selecionar um novo arquivo de licença */}
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group text-center">
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileChange}
+                            className="form-control"
+                          />
+                        </div>
+                      </div>
+                      {/* Exibe a licença atual, se houver */}
+                      <div className="col-md-6">
+                        <div className="form-group text-center">
+                          {usuario.licenca && (
+                            <div>
+                              <a
+                                href={usuario.licenca}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-link"
+                              >
+                                Visualizar Licença
+                              </a>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 

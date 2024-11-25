@@ -207,36 +207,31 @@ const UsuarioService = {
         }
     },
     AdicionarCondicionante: async (usuario: any): Promise<{ sucesso: boolean }> => {
-        try {
-            // Valida se o UID está presente
-            if (!usuario.uid) {
-                throw new Error('ID do usuário (uid) não fornecido.');
-            }
-
-            // Referência ao documento do Firestore
-            const usuarioDOC = doc(db, 'usuarios', usuario.uid, 'Condicionantes');
-
-            // Atualiza ou mescla os dados do usuário
-            await setDoc(
-                usuarioDOC,
-                {
-                    ...usuario,
-                },
-                { merge: true } // Mescla com os dados existentes
-            );
-
-            return { sucesso: true };
-        } catch (erro) {
-            console.error('Erro ao atualizar o usuário:', erro);
-            return { sucesso: false };
+        // Verifique se o objeto 'usuario' e o 'uid' estão definidos
+        if (!usuario || !usuario.uid) {
+            console.error('Erro: usuário ou uid não definido');
+            return { sucesso: false }; // Retorna falso se o uid não estiver presente
         }
-    },
+    
+        try {
+            // Gerar um novo ID para o condicionante ou usar um ID fornecido
+            const novoCondicionanteId = 'novoCondicionanteId'; // Pode ser gerado ou passado como parâmetro
+    
+            // Salvar o condicionante na subcoleção 'condicionantes' do usuário
+            await setDoc(doc(db, 'usuarios', usuario.uid, 'condicionantes', novoCondicionanteId), usuario);
+    
+            return { sucesso: true };
+        } catch (error) {
+            console.error('Erro ao salvar condicionante:', error);
+            return { sucesso: false }; // Retorna falso em caso de erro
+        }
+    },    
 
-    editarLicenca: async (usuario:any): Promise<{sucesso: boolean}> => {
-        return updateDoc(doc(db, 'usuarios',usuario.uid), usuario)
-            .then(() => { return { sucesso: true }})
-            .catch(() => { return { sucesso: false }});
-    }
+    editarLicenca: async (usuario: any): Promise<{ sucesso: boolean }> => {
+        return updateDoc(doc(db, 'usuarios', usuario.uid), usuario)
+            .then(() => { return { sucesso: true } })
+            .catch(() => { return { sucesso: false } });
+    },
 }
 
 
