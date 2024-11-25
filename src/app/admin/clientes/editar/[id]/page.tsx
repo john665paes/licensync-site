@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { AdminHeader } from '../../../components';
 import { useUsuarioService } from '../../../../../services/usuario';
 import { Field, Form, Formik } from 'formik';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { storage } from '@/config/firebase';
 
 export default function UsuarioEditarPage({ params }: any) {
   const usuariosSrv = useUsuarioService();
@@ -33,16 +35,41 @@ export default function UsuarioEditarPage({ params }: any) {
     setMensagem(null); // Reseta a mensagem de status
 
     try {
-      // Atualiza o usuário
+      // Atualiza os dados do usuário
       const retorno = await usuariosSrv.atualizarCliente(dados);
 
-      // Se a atualização foi bem-sucedida e há um arquivo, tenta fazer o upload da licença
-      if (retorno.sucesso && file) {
-        await inserirLicencaService(dados.uid, file); // Supondo que o método de inserção da licença seja esse
-        setMensagem(true); // Mensagem de sucesso após o upload
-        setFile(null); // Limpa o arquivo após o upload
-      } else if (!retorno.sucesso) {
-        setMensagem(false); // Caso a atualização falhe
+      if (retorno.sucesso) {
+        // Se houver um arquivo de licença, realiza o upload e chama o serviço editarLicenca
+        if (file && typeof file !== 'string') {
+          try {
+            const filePath = `licencas/${dados.uid}/${file.name}`;
+            const storageRef = ref(storage, filePath);
+
+            // Realiza o upload do arquivo
+            await uploadBytesResumable(storageRef, file).then(async (snapshot) => {
+              // Obtém a URL da licença
+              const licencaUrl = await getDownloadURL(snapshot.ref);
+
+              // Adiciona a URL da licença no objeto `dados`
+              dados.licenca = licencaUrl;
+
+              // Chama o serviço para salvar a URL da licença no banco
+              const licencaRetorno = await usuariosSrv.editarLicenca(dados);
+              if (!licencaRetorno.sucesso) {
+                throw new Error('Erro ao salvar a licença');
+              }
+            });
+          } catch (error) {
+            console.error('Erro ao salvar a licença:', error);
+            setMensagem(false); // Define mensagem de erro caso o upload ou a atualização da licença falhe
+            return;
+          }
+        }
+
+        setMensagem(true); // Exibe mensagem de sucesso
+        setFile(null); // Reseta o estado do arquivo após o upload
+      } else {
+        setMensagem(false); // Mostra mensagem de erro se o retorno for falso
       }
     } catch (error) {
       console.error('Erro ao salvar os dados:', error);
@@ -53,7 +80,7 @@ export default function UsuarioEditarPage({ params }: any) {
   // Função para lidar com a seleção do arquivo de licença
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]);  // Armazena o arquivo selecionado
+      setFile(event.target.files[0]); // Armazena o arquivo selecionado
     }
   };
 
@@ -122,7 +149,7 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* Outras entradas como telefone, cidade, etc. */}
+                    {/* Outras entradas */}
                     <div className="col-md-4">
                       <div className="form-group">
                         <label className="form-control-label">Telefone 1</label>
@@ -136,7 +163,7 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* Campos adicionais */}
+                    {/* Cidade e Endereço */}
                     <div className="col-md-4">
                       <div className="form-group">
                         <label className="form-control-label">Cidade</label>
@@ -144,7 +171,6 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* Endereço */}
                     <div className="col-md-8">
                       <div className="form-group">
                         <label className="form-control-label">Endereço</label>
@@ -152,50 +178,14 @@ export default function UsuarioEditarPage({ params }: any) {
                       </div>
                     </div>
 
-                    {/* CEP, Número, Bairro */}
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-control-label">CEP</label>
-                        <Field className="form-control" type="text" name="cep" />
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-control-label">Número</label>
-                        <Field className="form-control" type="text" name="numero" />
-                      </div>
-                    </div>
-
-                    {/* Complemento */}
-                    <div className="col-md-8">
-                      <div className="form-group">
-                        <label className="form-control-label">Complemento</label>
-                        <Field className="form-control" type="text" name="complemento" />
-                      </div>
-                    </div>
-
-                    {/* Bairro e UF */}
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-control-label">Bairro</label>
-                        <Field className="form-control" type="text" name="bairro" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-control-label">UF</label>
-                        <Field className="form-control" type="text" name="uf" />
-                      </div>
-                    </div>
-
-                    {/* Botão Adicionar Licença */}
+                    {/* Arquivo de licença */}
                     <div className="col-md-6">
                       <div className="form-group text-center">
-                        <input 
-                          type="file" 
-                          accept=".pdf" 
-                          onChange={handleFileChange} // Chama a função de seleção de arquivo
-                          className="form-control" 
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileChange}
+                          className="form-control"
                         />
                       </div>
                     </div>
@@ -218,7 +208,3 @@ export default function UsuarioEditarPage({ params }: any) {
     </main>
   );
 }
-function inserirLicencaService(uid: any, file: File) {
-  throw new Error('Function not implemented.');
-}
-

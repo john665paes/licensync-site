@@ -232,37 +232,10 @@ const UsuarioService = {
         }
     },
 
-    inserirLicencaService: async (id: string) => {
-        try {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.pdf';
-
-            fileInput.click();
-
-            fileInput.onchange = async () => {
-                const file = fileInput.files ? fileInput.files[0] : null;
-
-                if (file && id) {
-                    const fileName = file.name || 'licenca.pdf';
-                    const refLicenca = ref(storage, `arquivos/${id}/${fileName}`);
-
-                    const blobStream = await file.arrayBuffer().then((r) => new Blob([r]));
-                    await uploadBytes(refLicenca, blobStream);
-
-                    const url = await getDownloadURL(refLicenca);
-                    await updateDoc(doc(db, 'usuarios', id), { licenca: url });
-
-                    return url;
-                } else {
-                    console.log('Nenhum arquivo selecionado ou ID do usuário não encontrado.');
-                    return null;
-                }
-            };
-        } catch (error) {
-            console.error('Erro durante o processo de upload da licença:', error);
-            throw new Error('Erro ao fazer upload da licença.');
-        }
+    editarLicenca: async (usuario:any): Promise<{sucesso: boolean}> => {
+        return updateDoc(doc(db, 'usuarios',usuario.uid), usuario)
+            .then(() => { return { sucesso: true }})
+            .catch(() => { return { sucesso: false }});
     }
 }
 
