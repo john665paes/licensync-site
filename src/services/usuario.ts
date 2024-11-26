@@ -101,11 +101,11 @@ const UsuarioService = {
     cadastrarCliente: async (usuario: any): Promise<{ sucesso: boolean }> => {
         return createUserWithEmailAndPassword(auth, usuario.email, usuario.cnpj)
             .then(async retorno => {
-                usuario.uid = retorno.user.uid;
+                usuario.id = retorno.user.uid;
                 delete usuario.senha;
 
                 // Adicionando o nível antes de salvar
-                const usuarioDOC = doc(db, 'usuarios', usuario.uid);
+                const usuarioDOC = doc(db, 'usuarios', usuario.id);
                 await setDoc(usuarioDOC, {
                     ...usuario,
                     nivel: 'cliente', // Adicionando explicitamente o nível
@@ -123,7 +123,7 @@ const UsuarioService = {
     cadastrarAdm: async (usuario: any): Promise<{ sucesso: boolean }> => {
         return createUserWithEmailAndPassword(auth, usuario.email, usuario.senha)
             .then(async retorno => {
-                usuario.uid = retorno.user.uid;
+                usuario.id = retorno.user.uid;
                 delete usuario.senha;
 
                 // Adicionando o nível 'admin' antes de salvar
@@ -180,7 +180,7 @@ const UsuarioService = {
     atualizarCliente: async (usuario: any): Promise<{ sucesso: boolean }> => {
         try {
             // Valida se o UID está presente
-            if (!usuario.uid) {
+            if (!usuario.id) {
                 throw new Error('ID do usuário (uid) não fornecido.');
             }
 
@@ -188,7 +188,7 @@ const UsuarioService = {
             delete usuario.senha;
 
             // Referência ao documento do Firestore
-            const usuarioDOC = doc(db, 'usuarios', usuario.uid);
+            const usuarioDOC = doc(db, 'usuarios', usuario.id);
 
             // Atualiza ou mescla os dados do usuário
             await setDoc(
@@ -206,19 +206,17 @@ const UsuarioService = {
             return { sucesso: false };
         }
     },
-    AdicionarCondicionante: async (usuario: any): Promise<{ sucesso: boolean }> => {
+    AdicionarCondicionante: async (condicionante: any, usuario: any): Promise<{ sucesso: boolean }> => {
         // Verifique se o objeto 'usuario' e o 'uid' estão definidos
-        if (!usuario || !usuario.uid) {
+        if (!usuario) {
             console.error('Erro: usuário ou uid não definido');
             return { sucesso: false }; // Retorna falso se o uid não estiver presente
         }
     
         try {
-            // Gerar um novo ID para o condicionante ou usar um ID fornecido
-            const novoCondicionanteId = 'novoCondicionanteId'; // Pode ser gerado ou passado como parâmetro
-    
+           
             // Salvar o condicionante na subcoleção 'condicionantes' do usuário
-            await setDoc(doc(db, 'usuarios', usuario.uid, 'condicionantes', novoCondicionanteId), usuario);
+            await addDoc(collection(db, 'usuarios', usuario, 'condicionantes'), condicionante);
     
             return { sucesso: true };
         } catch (error) {
@@ -228,7 +226,7 @@ const UsuarioService = {
     },    
 
     editarLicenca: async (usuario: any): Promise<{ sucesso: boolean }> => {
-        return updateDoc(doc(db, 'usuarios', usuario.uid), usuario)
+        return updateDoc(doc(db, 'usuarios', usuario.id), usuario)
             .then(() => { return { sucesso: true } })
             .catch(() => { return { sucesso: false } });
     },

@@ -41,7 +41,7 @@ export default function UsuarioEditarPage({ params }: { params: Promise<{ id: st
 
     try {
         // Atualiza os dados do usuário
-        const retorno = await usuariosSrv.AdicionarCondicionante(dados);
+        const retorno = await usuariosSrv.AdicionarCondicionante(dados, usuario.uid);
 
         if (retorno.sucesso) {
             setMensagem('Condicionante adicionado com sucesso!');

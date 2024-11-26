@@ -24,7 +24,7 @@ export default function AdminLayout({children}: any) {
     return (
         <>
             { carregado && usuario && <main>
-                <div className="h-100 bg-primary position-absolute w-100"></div>
+                <div className="h-100 bg-default position-absolute w-100"></div>
                 {/* MENU */}
                 <aside className="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 offcanvas-lg" id="sidenav-main">
                     <div className="sidenav-header">
