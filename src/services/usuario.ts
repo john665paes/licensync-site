@@ -179,6 +179,7 @@ const UsuarioService = {
      */
     atualizarCliente: async (usuario: any): Promise<{ sucesso: boolean }> => {
         try {
+            usuario.id = usuario.uid;
             // Valida se o UID está presente
             if (!usuario.id) {
                 throw new Error('ID do usuário (uid) não fornecido.');
