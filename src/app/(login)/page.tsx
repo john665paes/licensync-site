@@ -125,11 +125,12 @@ export default function LoginPage() {
           </Formik>
 
           {/* ESQUECI MINHA SENHA */}
-          <div className="text-center mt-4">
-            <Link href="/recuperar-senha" style={{ color: '#2d8b4e', textDecoration: 'none', fontWeight: '500' }}>
+          <div className="text-center mt-4 font-bold text-lg">
+            <Link href="/recuperar-senha" style={{ color: '#2d8b4e', textDecoration: 'none' }}>
               Esqueci minha senha
             </Link>
-            <Link href="/recuperar-senha" style={{ color: '#2d8b4e', textDecoration: 'none', fontWeight: '500' }}>
+            <span className="mx-2" style={{ color: '#2d8b4e', fontWeight: 'bold' }}>|</span>
+            <Link href="/recuperar-senha" style={{ color: '#2d8b4e', textDecoration: 'none' }}>
               Ainda não tenho Cadastro
             </Link>
 
