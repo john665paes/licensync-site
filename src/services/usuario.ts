@@ -15,11 +15,12 @@ const UsuarioService = {
         try {
             // Tenta fazer o login do usuário com email e senha
             const retorno = await signInWithEmailAndPassword(auth, email, senha);
+            const userUid = retorno.user.uid; // Certifique-se de usar 'uid' para identificar o usuário
             console.log("Usuário autenticado:", retorno.user.uid);
 
             // Consulta no Firestore, verificando o 'uid' do usuário e o nível de 'admin'
             const consulta = query(collection(db, 'usuarios'),
-                where('uid', '==', retorno.user.uid),   // Verifique se o campo no Firestore é 'uid' ou outro
+                where('id', '==', userUid ),   // Verifique se o campo no Firestore é 'uid' ou outro
                 where('nivel', '==', 'admin'));
 
             const dados = await getDocs(consulta);
