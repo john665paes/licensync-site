@@ -1,35 +1,45 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { AdminHeader } from '../../../components';
-import { useUsuarioService } from '../../../../../services/usuario';
+import React, { useEffect, useState, Suspense } from 'react';
+import { AdminHeader } from '../../components';
+import { useUsuarioService } from '../../../../services/usuario';
 import { Field, Form, Formik } from 'formik';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { storage } from '@/config/firebase';
+import { useSearchParams } from 'next/navigation';
 
-export default function UsuarioEditarPage({ params }: any) {
+// 1. Criamos um sub-componente que cuida do formulário e de buscar o usuário
+function FormularioEdicaoCliente() {
   const usuariosSrv = useUsuarioService();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id'); // Extrai o ID da URL (?id=...)
+
   const [usuario, setUsuario] = useState<any>(null);
   const [mensagem, setMensagem] = useState<null | boolean>(null);
   const [loading, setLoading] = useState(true);
-  const [file, setFile] = useState<File | null>(null); // Estado para gerenciar o arquivo da licença
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     const buscarUsuario = async () => {
       try {
-        const resolvedParams = await params; // Resolve os parâmetros
-        const userId = resolvedParams.id;
-        const usuarioCarregado = await usuariosSrv.buscar(userId); // Busca o usuário no serviço
+        if (!userId) {
+          console.error('Nenhum ID foi informado na URL.');
+          setMensagem(false);
+          setLoading(false);
+          return;
+        }
+
+        const usuarioCarregado = await usuariosSrv.buscar(userId);
         setUsuario({ ...usuarioCarregado, uid: userId });
-        setLoading(false); // Finaliza o carregamento
+        setLoading(false);
       } catch (error) {
         console.error('Erro ao buscar usuário:', error);
-        setMensagem(false); // Mostra mensagem de erro, se necessário
-        setLoading(false); // Finaliza o carregamento mesmo em caso de erro
+        setMensagem(false);
+        setLoading(false);
       }
     };
 
     buscarUsuario();
-  }, [params, usuariosSrv]);
+  }, [userId, usuariosSrv]);
 
   const handleSalvar = async (dados: any) => {
     setMensagem(null); // Reseta a mensagem de status
@@ -61,7 +71,7 @@ export default function UsuarioEditarPage({ params }: any) {
             });
           } catch (error) {
             console.error('Erro ao salvar a licença:', error);
-            setMensagem(false); // Define mensagem de erro caso o upload ou a atualização da licença falhe
+            setMensagem(false);
             return;
           }
         }
@@ -77,18 +87,14 @@ export default function UsuarioEditarPage({ params }: any) {
     }
   };
 
-  // Função para lidar com a seleção do arquivo de licença
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]); // Armazena o arquivo selecionado
+      setFile(event.target.files[0]);
     }
   };
 
   return (
-    <main>
-      <AdminHeader titulo={'Editar Cliente'} />
-      <h6>Formulário</h6>
-
+    <>
       {/* Mensagens de Sucesso ou Erro */}
       {mensagem === false && (
         <p className="alert alert-danger">Não foi possível salvar o usuário</p>
@@ -99,12 +105,12 @@ export default function UsuarioEditarPage({ params }: any) {
 
       {/* Exibe o formulário somente quando os dados do usuário são carregados */}
       {loading ? (
-        <p>Carregando...</p> // Exibe mensagem enquanto está carregando os dados
+        <p>Carregando dados do cliente...</p>
       ) : (
         usuario && (
           <Formik
             initialValues={{
-              uid: usuario.uid || '', // Inclui o uid como parte dos valores iniciais
+              uid: usuario.uid || '',
               empresa: usuario.empresa || '',
               cnpj: usuario.cnpj || '',
               email: usuario.email || '',
@@ -120,13 +126,12 @@ export default function UsuarioEditarPage({ params }: any) {
               licenca: usuario.licenca || '',
             }}
             enableReinitialize
-            onSubmit={handleSalvar} // Chama a função handleSalvar com os dados do formulário
+            onSubmit={handleSalvar}
           >
             {({ isSubmitting }) => (
               <Form>
                 <div className="card-body">
                   <div className="row">
-
                     <div className="col-md-4">
                       <div className="form-group">
                         <label className="form-control-label">Empresa</label>
@@ -198,22 +203,25 @@ export default function UsuarioEditarPage({ params }: any) {
 
                     <div className="col-md-6">
                       <div className="form-group">
-                        <label className="form-control-label">Complemento</label>
+                        <label className="form-control-label">Bairro</label>
                         <Field className="form-control" type="text" name="bairro" />
                       </div>
                     </div>
 
                     <div className="col-md-6">
                       <div className="form-group">
-                        <label className="form-control-label">Complemento</label>
+                        <label className="form-control-label">UF</label>
                         <Field className="form-control" type="text" name="uf" />
                       </div>
                     </div>
 
                     {/* Campo para selecionar um novo arquivo de licença */}
-                    <div className="row">
+                    <div className="row w-100 mx-0 mt-3">
                       <div className="col-md-6">
                         <div className="form-group text-center">
+                          <label className="form-control-label d-block text-left">
+                            Anexar Nova Licença (PDF)
+                          </label>
                           <input
                             type="file"
                             accept=".pdf"
@@ -222,18 +230,19 @@ export default function UsuarioEditarPage({ params }: any) {
                           />
                         </div>
                       </div>
+                      
                       {/* Exibe a licença atual, se houver */}
-                      <div className="col-md-6">
-                        <div className="form-group text-center">
+                      <div className="col-md-6 d-flex align-items-center justify-content-center">
+                        <div className="form-group text-center mt-3 mt-md-0">
                           {usuario.licenca && (
                             <div>
                               <a
                                 href={usuario.licenca}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="btn btn-link"
+                                className="btn btn-outline-info"
                               >
-                                Visualizar Licença
+                                Visualizar Licença Atual
                               </a>
                             </div>
                           )}
@@ -242,10 +251,10 @@ export default function UsuarioEditarPage({ params }: any) {
                     </div>
 
                     {/* Botão Salvar */}
-                    <div className="col-md-12">
+                    <div className="col-md-12 mt-4">
                       <div className="form-group">
                         <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
-                          {isSubmitting ? 'Enviando...' : 'Salvar'}
+                          {isSubmitting ? 'Salvando Alterações...' : 'Salvar Alterações'}
                         </button>
                       </div>
                     </div>
@@ -256,6 +265,21 @@ export default function UsuarioEditarPage({ params }: any) {
           </Formik>
         )
       )}
+    </>
+  );
+}
+
+// 2. O componente principal da página.
+// Envolvemos a lógica que usa o `useSearchParams` com o `<Suspense>`.
+export default function UsuarioEditarPage() {
+  return (
+    <main>
+      <AdminHeader titulo="Editar Cliente" />
+      <h6>Formulário</h6>
+      
+      <Suspense fallback={<p>Carregando formulário...</p>}>
+        <FormularioEdicaoCliente />
+      </Suspense>
     </main>
   );
 }
