@@ -38,13 +38,11 @@ export default function AdminLayout({ children }: any) {
                                 src="/login.png"
                                 alt="LicenSync Logo"
                                 width={160}
-                                height={60}
+                                height={160}
                                 priority
                                 style={{ objectFit: 'contain' }}
                             />
-                            <div className="mt-2">
-                                <span className="text-xs text-uppercase font-weight-bolder opacity-6 text-success">Painel Admin</span>
-                            </div>
+                            
                         </div>
 
                         <hr className="horizontal dark mt-0" />
@@ -69,7 +67,7 @@ export default function AdminLayout({ children }: any) {
                                         <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                             <i className="ni ni-single-02 text-sm opacity-10"></i>
                                         </div>
-                                        <span className="nav-link-text ms-1 font-weight-bold">Usuários Admin</span>
+                                        <span className="nav-link-text ms-1 font-weight-bold">Usuários</span>
                                     </Link>
                                 </li>
 
