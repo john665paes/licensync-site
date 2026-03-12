@@ -1,84 +1,82 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { AdminHeader } from '../../../components';
-import { useUsuarioService } from '../../../../../services/usuario';
+import React, { useEffect, useState, Suspense } from 'react'; // Importamos o Suspense
+import { AdminHeader } from '../../components';
+import { useUsuarioService } from '../../../../services/usuario';
 import { Field, Form, Formik } from 'formik';
+import { useSearchParams } from 'next/navigation';
 
-export default function UsuarioEditarPage({ params }: { params: Promise<{ id: string }> }) {
+// 1. Criamos um sub-componente que vai conter o formulário e a lógica de busca
+function FormularioCondicionante() {
   const usuariosSrv = useUsuarioService();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id'); // Pega o ID direto da URL: ?id=123
+
   const [usuario, setUsuario] = useState<any>(null);
-  const [mensagem, setMensagem] = useState<null | string>(null); // Mensagem de sucesso ou erro
-  const [loading, setLoading] = useState(true); // Estado de carregamento
+  const [mensagem, setMensagem] = useState<null | string>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const buscarUsuario = async () => {
       try {
-        const resolvedParams = await params; // Resolve o Promise
-        const userId = resolvedParams.id; // Acesse o ID do resolvedParams
+        // Se não vier ID na URL, já avisa o erro e para
         if (!userId) {
           console.error('ID não encontrado');
-          setMensagem('Erro: ID não encontrado');
+          setMensagem('Erro: ID não encontrado na URL');
           setLoading(false);
           return;
         }
 
-        // Buscar usuário usando o ID
-        const usuarioCarregado = await usuariosSrv.buscar(userId); // Busca o usuário no serviço
+        // Buscar usuário usando o userId extraído
+        const usuarioCarregado = await usuariosSrv.buscar(userId);
         setUsuario({ ...usuarioCarregado, uid: userId });
-        setLoading(false); // Finaliza o carregamento
+        setLoading(false);
       } catch (error) {
         console.error('Erro ao buscar usuário:', error);
         setMensagem('Erro ao buscar os dados do usuário');
-        setLoading(false); // Finaliza o carregamento mesmo em caso de erro
+        setLoading(false);
       }
     };
 
     buscarUsuario();
-  }, [params, usuariosSrv]);
+  }, [userId, usuariosSrv]);
 
   const handleSalvar = async (dados: any) => {
-    console.log('dados no handleSalvar:', dados); // Adicione um log para depurar
+    console.log('dados no handleSalvar:', dados);
 
     try {
-        // Atualiza os dados do usuário
-        const retorno = await usuariosSrv.AdicionarCondicionante(dados, usuario.uid);
+      const retorno = await usuariosSrv.AdicionarCondicionante(dados, usuario.uid);
 
-        if (retorno.sucesso) {
-            setMensagem('Condicionante adicionado com sucesso!');
-        } else {
-            setMensagem('Erro ao adicionar condicionante.');
-        }
+      if (retorno.sucesso) {
+        setMensagem('Condicionante adicionado com sucesso!');
+      } else {
+        setMensagem('Erro ao adicionar condicionante.');
+      }
     } catch (error) {
-        console.error('Erro ao salvar os dados:', error);
-        setMensagem('Erro ao salvar os dados');
+      console.error('Erro ao salvar os dados:', error);
+      setMensagem('Erro ao salvar os dados');
     }
-};
+  };
 
   return (
-    <main>
-      <AdminHeader titulo="Adicionar Condicionante" />
-      <h6>Formulário</h6>
-
+    <>
       {/* Mensagens de Sucesso ou Erro */}
       {mensagem && (
-        <p
-          className={`alert ${mensagem.includes('sucesso') ? 'alert-success' : 'alert-danger'}`}
-        >
+        <p className={`alert ${mensagem.includes('sucesso') ? 'alert-success' : 'alert-danger'}`}>
           {mensagem}
         </p>
       )}
 
       {loading ? (
-        <p>Carregando...</p>
+        <p>Carregando dados do usuário...</p>
       ) : (
         usuario && (
           <Formik
             initialValues={{
               uid: usuario.uid,
-              condicionante: '', // Deixe os campos vazios, sem dados do banco
-              data: '', // Deixe o campo de data vazio
+              condicionante: '',
+              data: '',
             }}
-            onSubmit={handleSalvar} // Chama a função handleSalvar com os dados do formulário
+            onSubmit={handleSalvar}
           >
             {({ isSubmitting }) => (
               <Form>
@@ -89,7 +87,7 @@ export default function UsuarioEditarPage({ params }: { params: Promise<{ id: st
                       <div className="form-group">
                         <label className="form-control-label">Condicionante:</label>
                         <Field
-                          as="textarea" // Usando "textarea" para o campo condicionante
+                          as="textarea"
                           className="form-control"
                           name="condicionante"
                         />
@@ -102,7 +100,7 @@ export default function UsuarioEditarPage({ params }: { params: Promise<{ id: st
                         <label className="form-control-label">Data Vencimento:</label>
                         <Field
                           className="form-control"
-                          type="date" // Usando o tipo "date" para o campo de data
+                          type="date"
                           name="data"
                         />
                       </div>
@@ -127,6 +125,23 @@ export default function UsuarioEditarPage({ params }: { params: Promise<{ id: st
           </Formik>
         )
       )}
+    </>
+  );
+}
+
+// 2. Este é o componente principal (a página). Ele não recebe mais {params}.
+export default function UsuarioEditarPage() {
+  return (
+    <main>
+      <AdminHeader titulo="Adicionar Condicionante" />
+      <h6>Formulário</h6>
+      
+      {/* 3. Obrigatório no Next.js: O componente que usa useSearchParams 
+        deve ficar dentro de um Suspense.
+      */}
+      <Suspense fallback={<p>Carregando formulário...</p>}>
+        <FormularioCondicionante />
+      </Suspense>
     </main>
   );
 }

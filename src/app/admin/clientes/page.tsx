@@ -69,7 +69,7 @@ export default function FormulariosPage() {
 
                       {/* Botão de Adicionar Condicionante */}
                       <Link
-                        href={`/admin/clientes/addCondicionante/${usuario.id}`}
+                        href={`/admin/clientes/addCondicionante?id=${usuario.id}`}
                         className="btn btn-sm btn-outline-primary me-3"
                         data-toggle="tooltip"
                         data-original-title="Adicionar Condicionante"
