@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center py-5">
 
         <Image
-          src="/login.png" // Caminho direto da pasta public
+          src="login.png"
           alt="LicenSync Logo"
           width={200}
           height={150}
