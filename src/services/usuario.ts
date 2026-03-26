@@ -143,36 +143,43 @@ const UsuarioService = {
     },
 
 
+/**
+ * Excluir um usuário do Firestore
+ */
+excluirUsuario: async (uid: any): Promise<{ sucesso: boolean }> => {
+    try {
+        // 1. Garantir que o UID seja uma string e não esteja vazio
+        const idLimpo = String(uid).trim();
 
-    /**
-     * Excluir um usuario
-     * @param usuario 
-     * @returns 
-     */
-    excluirUsuario: async (uid: string): Promise<{ sucesso: boolean }> => {
-        try {
-            const auth = getAuth();
-            const user = auth.currentUser;
-
-            // Verificar se o usuário atual é o mesmo a ser deletado
-            if (user && user.uid === uid) {
-                // Deletar do Firestore
-                await deleteDoc(doc(db, 'usuarios', uid));
-
-                // Deletar da Autenticação
-                await deleteUser(user);
-
-                console.log(`Usuário ${uid} deletado com sucesso.`);
-                return { sucesso: true };
-            } else {
-                console.error('O usuário atual não corresponde ao UID fornecido.');
-                return { sucesso: false };
-            }
-        } catch (erro) {
-            console.error("Erro ao excluir usuário:", erro);
+        if (!idLimpo || idLimpo === "undefined" || idLimpo === "[object Object]") {
+            console.error("ID inválido fornecido para exclusão:", uid);
             return { sucesso: false };
         }
-    },
+
+        const authInstance = getAuth();
+        const userLogado = authInstance.currentUser;
+
+        // 2. Trava de segurança para não se autodeletar
+        if (userLogado && userLogado.uid === idLimpo) {
+            console.error("Operação negada: Não é possível excluir o próprio perfil logado.");
+            return { sucesso: false };
+        }
+
+        // 3. Referência do documento (Onde o erro costuma acontecer se o ID estiver mal formado)
+        const docRef = doc(db, 'usuarios', idLimpo);
+
+        // 4. Execução da exclusão
+        await deleteDoc(docRef);
+
+        console.log(`Usuário ${idLimpo} removido com sucesso.`);
+        return { sucesso: true };
+
+    } catch (erro: any) {
+        // Captura o erro sem deixar o app travar
+        console.error("Erro ao excluir usuário:", erro.message);
+        return { sucesso: false };
+    }
+},
     /**
      * Edita um usuário
      * @param usuario 

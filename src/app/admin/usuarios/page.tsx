@@ -5,41 +5,44 @@ import Link from 'next/link';
 import { useUsuarioService } from '../../../services/usuario';
 
 export default function UsuariosPage() {
-
   const usuariosSrv = useUsuarioService();
   const [usuarios, setUsuarios] = React.useState<any[]>([]);
-  // ===========================================================
-  const buscarUsuariosCliente = React.useCallback(async () => {
-    setUsuarios(await usuariosSrv.buscarUsuariosCliente());
+
+  // Funcao para carregar a lista (centralizada para reutilizacao)
+  const carregarUsuarios = React.useCallback(async () => {
+    const lista = await usuariosSrv.buscarUsuariosCliente();
+    setUsuarios(lista || []);
   }, [usuariosSrv]);
+
+  // Efeito inicial
+  React.useEffect(() => {
+    carregarUsuarios();
+  }, [carregarUsuarios]);
+
   // ----------
   const handleResetarSenha = async (usuario: any) => {
     const retorno = await usuariosSrv.recuperarSenha(usuario.email);
     if (retorno.sucesso)
-      alert('Email enviado');
+      alert('Email de redefinição enviado com sucesso!');
     else
-      alert('Conta não encontrada');
+      alert('Não foi possível encontrar esta conta.');
   }
+
   // ----------
-  const handleDeletarConta = async (usuario: any) => {
-    if (confirm(`Deseja realmente excluir a conta de ${usuario.nome}(${usuario.email})?`)) {
-      const retorno = await usuariosSrv.excluirUsuario(usuario);
+  // CORRECAO: Agora recebe apenas o ID, igual na pagina de clientes
+  const handleDeletarConta = async (id: string, nome: string) => {
+    if (confirm(`Deseja realmente excluir a conta de ${nome}?`)) {
+      const retorno = await usuariosSrv.excluirUsuario(id);
+      
       if (retorno.sucesso) {
-        setUsuarios(await usuariosSrv.buscarUsuariosCliente())
-        alert('Conta deletada');
-      } else
-        alert('Conta não encontrada');
+        alert('Conta deletada com sucesso!');
+        await carregarUsuarios(); // Atualiza a lista na tela
+      } else {
+        alert('Erro ao tentar deletar a conta.');
+      }
     }
   }
-  // ----------
-  React.useEffect(() => {
-    const fetchUsuarios = async () => {
-      setUsuarios(await usuariosSrv.buscarUsuariosCliente());
-    };
 
-    fetchUsuarios();
-  }, [usuariosSrv]);
-  // ===========================================================
   return (
     <main>
       <AdminHeader titulo='Lista de Usuários'>
@@ -47,39 +50,52 @@ export default function UsuariosPage() {
         <Link className='btn btn-primary' href="/admin/usuarios/editarCliente">Novo usuário cliente</Link>
       </AdminHeader>
 
-      <div className="card-header pb-0">
-        <h6>Clientes</h6>
+      <div className="card-header pb-0 px-4 pt-4">
+        <h6 className="fw-bold" style={{ color: '#2d8b4e' }}>Usuários Cadastrados</h6>
       </div>
+
       <div className="card-body px-0 pt-0 pb-2">
         <div className="table-responsive p-0">
           <table className="table align-items-center mb-0">
             <thead>
               <tr>
-                <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Usuário</th>
-                <th className="text-secondary opacity-7"></th>
+                <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 px-4">Usuário / Empresa</th>
+                <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usuarios.map((usuario) => (
-                <tr key={usuario.id}>
-                  <td>
-                    <div className="d-flex px-2 py-1">
-                      <div className="d-flex flex-column justify-content-center">
-                        <h6 className="mb-0 text-sm">{usuario.empresa}</h6>
-                        <p className="text-xs text-secondary mb-0">{usuario.email}</p>
-                      </div>
+                <tr key={usuario.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td className="px-4 py-3">
+                    <div className="d-flex flex-column">
+                      <h6 className="mb-0 text-sm fw-bold">{usuario.nome || usuario.empresa}</h6>
+                      <p className="text-xs text-secondary mb-0">{usuario.email}</p>
                     </div>
                   </td>
-                  <td className="align-middle">
-                    <p className="text-secondary font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleResetarSenha(usuario)} data-toggle="tooltip" data-original-title="Edit user">
-                      Resetar senha
-                    </p>
-                    <p className="text-danger font-weight-bold text-xs" style={{ cursor: 'pointer' }} onClick={() => handleDeletarConta(usuario)} data-toggle="tooltip" data-original-title="Edit user">
-                      Excluir conta
-                    </p>
+                  <td className="align-middle text-center">
+                    <div className="d-flex justify-content-center gap-3">
+                      
+                      {/* RESETAR SENHA */}
+                      <span 
+                        className="text-primary font-weight-bold text-xs" 
+                        style={{ cursor: 'pointer' }} 
+                        onClick={() => handleResetarSenha(usuario)}
+                      >
+                        <i className="fas fa-key me-1"></i> Resetar senha
+                      </span>
+
+                      {/* EXCLUIR CONTA - Passando ID e Nome separadamente */}
+                      <span 
+                        className="text-danger font-weight-bold text-xs" 
+                        style={{ cursor: 'pointer' }} 
+                        onClick={() => handleDeletarConta(usuario.id, usuario.nome || usuario.empresa)}
+                      >
+                        <i className="fas fa-trash me-1"></i> Excluir conta
+                      </span>
+
+                    </div>
                   </td>
                 </tr>
-
               ))}
             </tbody>
           </table>

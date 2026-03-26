@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center py-5">
 
         <Image
-          src="login.png"
+          src="/login.png"
           alt="LicenSync Logo"
           width={200}
           height={150}
@@ -130,7 +130,7 @@ export default function LoginPage() {
               Esqueci minha senha
             </Link>
             <span className="mx-2" style={{ color: '#2d8b4e', fontWeight: 'bold' }}>|</span>
-            <Link href="/recuperar-senha" style={{ color: '#2d8b4e', textDecoration: 'none' }}>
+            <Link href="/cadastro" style={{ color: '#2d8b4e', textDecoration: 'none' }}>
               Ainda não tenho Cadastro
             </Link>
 
