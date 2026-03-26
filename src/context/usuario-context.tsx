@@ -2,29 +2,43 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '@/config/firebase';
 
-const UsuarioContext = createContext<{usuario:any, setUsuario: any, carregado: boolean, deslogar: any}>({usuario: '', setUsuario: null, carregado: false, deslogar: null});
+const UsuarioContext = createContext<{usuario:any, setUsuario: any, carregado: boolean, deslogar: any}>({
+    usuario: null, 
+    setUsuario: null, 
+    carregado: false, 
+    deslogar: null
+});
 
 export const UsuarioProvider = ({ children }: any) => {
-    const [usuario, _setUsuario] = useState('');
-    const [ carregado, setCarregado] = useState(false);
+    // Alterado de '' para null para facilitar verificações
+    const [usuario, _setUsuario] = useState<any>(null); 
+    const [carregado, setCarregado] = useState(false);
 
-    // ======================================================================
-    const setUsuario = (usuario:any) => {
-        localStorage.setItem('usuario', JSON.stringify(usuario))
-        _setUsuario(usuario);
+    const setUsuario = (dados: any) => {
+        if (dados) {
+            localStorage.setItem('usuario', JSON.stringify(dados));
+        }
+        _setUsuario(dados);
     }
-    // ---------
+
     const deslogar = async () => {
         localStorage.removeItem('usuario');
-        auth.signOut();
+        _setUsuario(null);
+        await auth.signOut();
     }
-    // ---------
+
     useEffect(() => {
-        const usuario = localStorage.getItem('usuario');
-        if (usuario) _setUsuario(JSON.parse(usuario));
+        const usuarioLocal = localStorage.getItem('usuario');
+        if (usuarioLocal) {
+            try {
+                _setUsuario(JSON.parse(usuarioLocal));
+            } catch (e) {
+                console.error("Erro ao ler usuário do localStorage", e);
+            }
+        }
         setCarregado(true);
     }, [])
-    // ======================================================================
+
     return (
         <UsuarioContext.Provider value={{ usuario, setUsuario, carregado, deslogar }}>
             {children}
@@ -32,6 +46,4 @@ export const UsuarioProvider = ({ children }: any) => {
     );
 };
 
-export const useUsuarioContext = () => {
-  return useContext(UsuarioContext);
-};
+export const useUsuarioContext = () => useContext(UsuarioContext);

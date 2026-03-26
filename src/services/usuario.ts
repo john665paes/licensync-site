@@ -11,32 +11,40 @@ const UsuarioService = {
      * @param senha 
      * @returns {usuario caso logado com sucesso, e o sucesso com um status de logado ou não}
      */
-    logar: async (email: string, senha: string): Promise<{ usuario?: any; sucesso: boolean }> => {
-        try {
-            // Tenta fazer o login do usuário com email e senha
-            const retorno = await signInWithEmailAndPassword(auth, email, senha);
-            const userUid = retorno.user.uid; // Certifique-se de usar 'uid' para identificar o usuário
-            console.log("Usuário autenticado:", retorno.user.uid);
+   logar: async (email: string, senha: string): Promise<{ usuario?: any; sucesso: boolean }> => {
+    try {
+        // 1. Tenta autenticar no Firebase Auth
+        const retorno = await signInWithEmailAndPassword(auth, email, senha);
+        const userUid = retorno.user.uid;
 
-            // Consulta no Firestore, verificando o 'uid' do usuário e o nível de 'admin'
-            const consulta = query(collection(db, 'usuarios'),
-                where('id', '==', userUid ),   // Verifique se o campo no Firestore é 'uid' ou outro
-                where('nivel', '==', 'admin'));
+        // 2. Busca os dados completos deste usuário no Firestore
+        // Buscamos pelo ID do documento que deve ser o UID do usuário
+        const docRef = doc(db, 'usuarios', userUid);
+        const snap = await getDoc(docRef);
 
-            const dados = await getDocs(consulta);
-            console.log("Usuários encontrados:", dados.size);
+        if (snap.exists()) {
+            const dadosUsuario = snap.data();
 
-            if (dados.size > 0) {
-                return { sucesso: true, usuario: retorno.user };
+            // 3. Verifica se ele é admin
+            if (dadosUsuario.nivel === 'admin') {
+                // Retornamos um objeto único contendo os dados do Auth + dados do Firestore (NOME, etc)
+                return { 
+                    sucesso: true, 
+                    usuario: { ...retorno.user, ...dadosUsuario } 
+                };
+            } else {
+                console.warn("Usuário não tem permissão de administrador.");
+                return { sucesso: false };
             }
-
-            console.warn("Usuário autenticado, mas não encontrado no Firestore com nível 'admin'.");
-            return { sucesso: false }; // Usuário autenticado, mas não encontrado no Firestore com nível 'admin'
-        } catch (erro: any) {
-            console.error("Erro durante o login:", erro.code, erro.message);
-            return { sucesso: false };
         }
-    },
+
+        console.warn("Usuário autenticado no Auth, mas dados não encontrados no Firestore.");
+        return { sucesso: false };
+    } catch (erro: any) {
+        console.error("Erro durante o login:", erro.code, erro.message);
+        return { sucesso: false };
+    }
+},
 
     /**
      * Função para recuperar senha
@@ -121,26 +129,28 @@ const UsuarioService = {
     },
 
 
-    cadastrarAdm: async (usuario: any): Promise<{ sucesso: boolean }> => {
-        return createUserWithEmailAndPassword(auth, usuario.email, usuario.senha)
-            .then(async retorno => {
-                usuario.id = retorno.user.uid;
-                delete usuario.senha;
+   cadastrarAdm: async (usuario: any): Promise<{ sucesso: boolean }> => {
+    return createUserWithEmailAndPassword(auth, usuario.email, usuario.senha)
+        .then(async retorno => {
+            const uid = retorno.user.uid; // Pega o UID gerado
+            delete usuario.senha;
+            delete usuario.confirmarSenha;
 
-                // Adicionando o nível 'admin' antes de salvar
-                const usuarioDOC = doc(db, 'usuarios', usuario.uid);
-                await setDoc(usuarioDOC, {
-                    ...usuario,
-                    nivel: 'admin', // Definindo o nível como 'admin'
-                });
-
-                return { sucesso: true };
-            })
-            .catch(erro => {
-                console.error(erro);
-                return { sucesso: false };
+            // Define o ID do documento como o UID do Auth
+            const usuarioDOC = doc(db, 'usuarios', uid);
+            await setDoc(usuarioDOC, {
+                ...usuario,
+                id: uid,       // Garante que o campo 'id' interno seja o UID
+                nivel: 'admin',
             });
-    },
+
+            return { sucesso: true };
+        })
+        .catch(erro => {
+            console.error(erro);
+            return { sucesso: false };
+        });
+},
 
 
 /**
