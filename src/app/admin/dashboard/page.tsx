@@ -24,18 +24,18 @@ export default function DashboardPage() {
   if (!carregado) return null;
 
   return (
-    <main style={{ backgroundColor: '#a1b5a3', minHeight: '100vh', padding: '20px' }}>
+    <main style={{ backgroundColor: '#ffffff', minHeight: '100vh', padding: '20px' }}>
       
       {/* DEBUG: Se o nome não aparecer, remova o comentário da linha abaixo para ver o que tem no objeto */}
       {/* <pre>{JSON.stringify(usuario, null, 2)}</pre> */}
 
       <div className="d-flex align-items-center mb-4 p-3 shadow-sm"
-        style={{ backgroundColor: '#034024', borderRadius: '15px', color: '#fff' }}>
+        style={{ backgroundColor: '#2d8b4e', borderRadius: '15px', color: '#fff' }}>
 
         {/* AVATAR COM A INICIAL DO NOME */}
         <div className="rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm"
           style={{ width: '55px', height: '55px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.2)' }}>
-          <span style={{ color: '#034024', fontWeight: 'bold', fontSize: '1.2rem' }}>
+          <span style={{ color: '#000000', fontWeight: 'bold', fontSize: '1.2rem' }}>
             {usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'A'}
           </span>
         </div>
@@ -45,7 +45,7 @@ export default function DashboardPage() {
             {textoSaudacao}
           </p>
 
-          <h5 className="mb-0 fw-bold" style={{ fontSize: '1.1rem' }}>
+          <h5 className="mb-0 fw-bold" style={{ fontSize: '1.1rem', color: '#fff' }}>
             {usuario?.nome || 'Administrador'}
           </h5>
         </div>

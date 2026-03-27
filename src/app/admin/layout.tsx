@@ -30,31 +30,33 @@ export default function AdminLayout({ children }: any) {
     return (
         <>
             {carregado && usuario && (
-                <div className="g-sidenav-show bg-gray-100 min-vh-100">
+                <div className="g-sidenav-show bg-gray-300 min-vh-100">
                     {/* MENU LATERAL (SIDEBAR) */}
-                    <aside className="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 shadow-sm" id="sidenav-main">
-                        <div className="sidenav-header text-center py-4 h-auto">
+                    <aside className="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 
+                    border-radius-xl my-3 fixed-start ms-4 shadow-sm" id="sidenav-main"
+                        style={{ height: 'fit-content', paddingBottom: '20px' }}>
+                        <div className="sidenav-header text-center py- h-auto">
                             <Image
                                 src="/login.png"
                                 alt="LicenSync Logo"
-                                width={160}
-                                height={160}
+                                width={200}
+                                height={200}
                                 priority
                                 style={{ objectFit: 'contain' }}
                             />
-                            
+
                         </div>
 
                         <hr className="horizontal dark mt-0" />
 
-                        <div className="collapse navbar-collapse w-auto h-auto" id="sidenav-collapse-main">
-                            <ul className="navbar-nav px-3">
-                                <li className="nav-item">
-                                    <Link className={getLinkClass('dashboard')} href="/admin/dashboard">
+                        <div className="collapse navbar-collapse w-auto h-auto" id="sidenav-collapse-main ">
+                            <ul className="navbar-nav px-1">
+                                <li className="nav-item"  >
+                                    <Link className={getLinkClass('dashboard')} href="/admin/dashboard" style={{ backgroundColor: '#2d8b4e', color: '#ffffff', borderRadius: '10px' }}>
                                         <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                             <i className="ni ni-tv-2 text-sm opacity-10"></i>
                                         </div>
-                                        <span className="nav-link-text ms-1 font-weight-bold">Dashboard</span>
+                                        <span className="nav-link-text ms-1 font-weight-bold" style={{ color: '#ffffff' }}>Dashboard</span>
                                     </Link>
                                 </li>
 
@@ -63,34 +65,34 @@ export default function AdminLayout({ children }: any) {
                                 </li>
 
                                 <li className="nav-item">
-                                    <Link className={getLinkClass('usuarios')} href="/admin/usuarios">
+                                    <Link className={getLinkClass('usuarios')} href="/admin/usuarios" style={{ backgroundColor: '#2d8b4e', color: '#ffffff', borderRadius: '10px' }}>
                                         <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                             <i className="ni ni-single-02 text-sm opacity-10"></i>
                                         </div>
-                                        <span className="nav-link-text ms-1 font-weight-bold">Usuários</span>
+                                        <span className="nav-link-text ms-1 font-weight-bold" style={{ color: '#ffffff' }}>Usuários</span>
                                     </Link>
                                 </li>
 
                                 <li className="nav-item">
-                                    <Link className={getLinkClass('clientes')} href="/admin/clientes">
+                                    <Link className={getLinkClass('clientes')} href="/admin/clientes" style={{ backgroundColor: '#2d8b4e', color: '#ffffff', borderRadius: '10px' }}>
                                         <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                             <i className="ni ni-bullet-list-67 text-sm opacity-10"></i>
                                         </div>
-                                        <span className="nav-link-text ms-1 font-weight-bold">Lista de Clientes</span>
+                                        <span className="nav-link-text ms-1 font-weight-bold" style={{ color: '#ffffff' }}>Lista de Clientes</span>
                                     </Link>
                                 </li>
 
-                                {/* SUGESTÕES DE NOVOS MENUS ABAIXO */}
                                 <li className="nav-item mt-3">
                                     <h6 className="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Relatórios</h6>
                                 </li>
 
+                                {/* implementar pagina de LICENSAS A VENCER */}
                                 <li className="nav-item">
-                                    <Link className="nav-link text-dark py-3" href="#">
+                                    <Link className={getLinkClass('clientes')} href="/admin/clientes" style={{ backgroundColor: '#2d8b4e', color: '#ffffff', borderRadius: '10px' }}>
                                         <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                             <i className="ni ni-archive-2 text-sm opacity-10"></i>
                                         </div>
-                                        <span className="nav-link-text ms-1 font-weight-bold">Licenças a Vencer</span>
+                                        <span className="nav-link-text ms-1 font-weight-bold" style={{ color: '#ffffff' }}>Licenças a Vencer</span>
                                     </Link>
                                 </li>
                             </ul>
@@ -106,8 +108,8 @@ export default function AdminLayout({ children }: any) {
 
                     {/* CONTEÚDO PRINCIPAL */}
                     <main className="main-content position-relative border-radius-lg">
-                        {/* NAVBAR SUPERIOR */}
-                        <nav className="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl bg-transparent" id="navbarBlur" data-scroll="false">
+                        {/* NAVBAR SUPERIOR  saudação e nome de usuario*/}
+                        {/* <nav className="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl bg-transparent" id="navbarBlur" data-scroll="false">
                             <div className="container-fluid py-1 px-3 d-flex justify-content-end">
                                 <div className="d-flex align-items-center bg-white shadow-sm px-3 py-2 rounded-pill">
                                     <span className="text-dark font-weight-bold me-3">
@@ -118,7 +120,7 @@ export default function AdminLayout({ children }: any) {
                                     </div>
                                 </div>
                             </div>
-                        </nav>
+                        </nav> */}
 
                         {/* ÁREA DA PÁGINA */}
                         <div className="container-fluid py-4">
