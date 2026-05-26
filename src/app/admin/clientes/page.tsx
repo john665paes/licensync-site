@@ -59,12 +59,12 @@ export default function FormulariosPage() {
                     <div className="d-flex justify-content-start">
                       {/* Link de Editar */}
                       <Link
-                        href={`/admin/clientes/editar?id=${usuario.id}`}
+                        href={`/admin/clientes/condicionante?id=${usuario.id}`}
                         className="btn btn-sm btn-outline-primary me-3"
                         data-toggle="tooltip"
                         data-original-title="Editar usuário"
                       >
-                        <i className="fas fa-pencil-alt me-2"></i> Editar
+                        <i className="fas fa-pencil-alt me-2"></i> Condicionantes
                       </Link>
 
                       {/* Botão de Adicionar Condicionante */}
